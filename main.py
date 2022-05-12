@@ -8,9 +8,7 @@ from slack_sdk.errors import SlackApiError
 from dotenv import load_dotenv
 
 from crawling_site import Usenix
-
-conference_list = ["Usenix", "IEEE Symposium on Security and Privacy", "CCS", "NDSS", "Wisec"]
-keyword_list = ["5G", "4G", "LTE", "SIM", "cellular", "Cellular"]
+from basic_types import conference_list
 
 class SlackAPI:
   """
@@ -24,13 +22,23 @@ class SlackAPI:
 
   def set_block(self, files):
     block = []
-    block.append({
-      "type" : "section", 
-      "text" : {
-        "type" : "mrkdwn",
-        "text" : "Hello, there are papers for you.\n\n *Please read papers*"
-      }
-    })
+    # no files
+    if (len(files) == 0):
+      block.append({
+        "type" : "section", 
+        "text" : {
+          "type" : "mrkdwn",
+          "text" : "Hello, there are *no papers* for you.\n\n"
+        }
+      })
+    else:  
+      block.append({
+        "type" : "section", 
+        "text" : {
+          "type" : "mrkdwn",
+          "text" : "Hello, there are papers for you.\n\n *Please read papers*"
+        }
+      })
     block.append({
       "type" : "divider"
     })
@@ -66,7 +74,7 @@ class SlackAPI:
     except SlackApiError as e:
       # You will get a SlackApiError if "ok" is False
       print(e.response["error"])    # str like 'invalid_auth', 'channel_not_found'
-      print(e)    
+      print(e)
 
   def post_thread_message(self, text, message_ts=""):
     try:
@@ -80,8 +88,8 @@ class SlackAPI:
       print(e)
 
 # crawling
-year = 22
-season = "summer"
+year = 19
+season = "fall"
 usenix = Usenix(year, season)
 files = usenix.find_paper()
 
@@ -91,5 +99,4 @@ slack_token = os.getenv('SLACK_BOT_TOKEN')
 slack = SlackAPI(slack_token)
 
 channel_name = "test"
-# text= "Hello from your app! :tada:"
 slack.post_message(channel_name, files)
