@@ -7,8 +7,8 @@ from slack_sdk.errors import SlackApiError
 
 from dotenv import load_dotenv
 
-from crawling_site import Usenix
-from basic_types import conference_list
+from crawling_site import Usenix, NDSS
+from basic_types import conference_list, Usenix_years, NDSS_years
 
 class SlackAPI:
   """
@@ -47,7 +47,7 @@ class SlackAPI:
         "type" : "section", 
         "text" : {
           "type" : "mrkdwn",
-          "text" : "*%s*\n %s" % (file["name"], file["url"])
+          "text" : "*%s*\n authors: %s\n%s" % (file["name"], file["authors"], file["url"])
         }
       })
     self.block = block
@@ -87,16 +87,23 @@ class SlackAPI:
       print(e.response["error"])    # str like 'invalid_auth', 'channel_not_found'
       print(e)
 
-# crawling
-year = 19
-season = "fall"
-usenix = Usenix(year, season)
-files = usenix.find_paper()
-
 load_dotenv(verbose=True)
 
 slack_token = os.getenv('SLACK_BOT_TOKEN')
 slack = SlackAPI(slack_token)
 
 channel_name = "test"
-slack.post_message(channel_name, files)
+
+# crawling
+year = 18
+#season = "fall"
+for year in [20]:
+  usenix = Usenix(year)
+  files = usenix.find_all_papers()
+  print(files)
+  entitys = files.values()
+  for entity in entitys:
+    if(entity != None and entity != []):
+      slack.post_message(channel_name, entity)
+# ndss = NDSS(year, season)
+# files = ndss.find_paper()
